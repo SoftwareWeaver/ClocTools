@@ -33,14 +33,14 @@ def parse_cloc_result(root):
         'languages' : languages
     }
     return data
+
 def cloc_on_commit(hash):
     git_checkout(hash)
     args=['cloc','-xml','-q','.']
     print(args)
     data = subprocess.check_output(args).decode('utf-8').strip()
     root = ET.fromstring(data)
-    i = parse_cloc_result(root)
-    pprint.pprint(i)
+    return parse_cloc_result(root)
 
 def git_checkout(hash):
     args=['git','checkout','-q', hash]
@@ -55,9 +55,13 @@ def main():
     args=['git','rev-list', 'HEAD']
     commits = subprocess.check_output(args).decode('utf-8').split("\n")
     commits = commits[0:len(commits)-1]
+
+    stats = []
     for i in commits:
-        cloc_on_commit(i)
+        com = cloc_on_commit(i)
+        stats.append(com)
     
+    pprint.pprint(stats)
     git_checkout(initialCommit)
     
 if __name__ == "__main__":
