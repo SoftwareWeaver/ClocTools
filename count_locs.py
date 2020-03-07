@@ -59,10 +59,23 @@ def main():
     stats = []
     for i in commits:
         com = cloc_on_commit(i)
+        com.update({
+            'hash' : i
+        })
         stats.append(com)
-    
-    pprint.pprint(stats)
     git_checkout(initialCommit)
+    swift_loc = [
+        [
+            i['hash'], 
+            i['languages']['Swift']['files_count'], 
+            i['languages']['Swift']['code'], 
+            i['languages']['Swift']['blank'], 
+            i['languages']['Swift']['comment']
+        ] for i in stats
+    ]
+    
+    pprint.pprint(swift_loc)
+    
     
 if __name__ == "__main__":
     main()
