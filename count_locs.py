@@ -63,18 +63,31 @@ def main():
             'hash' : i
         })
         stats.append(com)
+
     git_checkout(initialCommit)
-    swift_loc = [
-        [
-            i['hash'], 
-            i['languages']['Swift']['files_count'], 
-            i['languages']['Swift']['code'], 
-            i['languages']['Swift']['blank'], 
-            i['languages']['Swift']['comment']
-        ] for i in stats
-    ]
+
+    langs = set()
+    for i in stats:
+        for k, _ in i['languages'].items():
+            langs.add(k)
     
-    pprint.pprint(swift_loc)
+    dataset = {}
+    for l in langs:
+        try:
+            locs = [
+                [
+                    i['hash'], 
+                    i['languages'].get(l, {'files_count':0})['files_count'], 
+                    i['languages'].get(l, {'code':0})['code'], 
+                    i['languages'].get(l, {'blank':0})['blank'], 
+                    i['languages'].get(l, {'comment':0})['comment']
+                ] for i in stats
+            ]
+            dataset[l] = locs
+        except:
+            continue
+    
+    pprint.pprint(dataset)
     
     
 if __name__ == "__main__":
