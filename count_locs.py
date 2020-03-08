@@ -1,10 +1,38 @@
 import subprocess
 import pprint
 import json
+import datetime
 import xml.etree.ElementTree as ET
 
 
-def parse_cloc_result(root):
+def git_get_symbolic_ref():
+    try:
+        args = ['git', 'symbolic-ref', '--short', 'HEAD']
+        return subprocess.check_output(
+            args,
+            stderr=subprocess.DEVNULL
+        ).decode('utf-8').strip('\n')
+    except subprocess.CalledProcessError:
+        return None
+
+
+def git_get_rev():
+    args = ['git', 'rev-parse', 'HEAD']
+
+    return subprocess.check_output(
+        args
+    ).decode('utf-8').strip("\n")
+
+def git_checkout(hash):
+    args = ['git', 'checkout', '-q', hash]
+    subprocess.check_output(args).decode('utf-8').split("\n")
+
+def git_get_commit_date():
+    args=['git','log','-n1','--pretty=%cI']
+    datestring = subprocess.check_output(args).decode('utf-8').strip("\n")
+    return datetime.datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S%z")
+
+def parse_cloc_xml_result(root):
 
     header = {}
 
@@ -36,39 +64,44 @@ def parse_cloc_result(root):
     return data
 
 
-def cloc_on_commit(hash):
+def cloc_on_commit(hash, commitDate):
     git_checkout(hash)
+    
     args = ['cloc', '-xml', '-q', '.']
-    print(args)
+    
+    print("%s %s"%( str(hash), str(commitDate) ))
+
     data = subprocess.check_output(args).decode('utf-8').strip()
     root = ET.fromstring(data)
-    return parse_cloc_result(root)
-
-
-def git_checkout(hash):
-    args = ['git', 'checkout', '-q', hash]
-    subprocess.check_output(args).decode('utf-8').split("\n")
-
+    result = parse_cloc_xml_result(root)
+    return result
 
 def main():
-    args = ['git', 'rev-parse', 'HEAD']
-
-    initialCommit = subprocess.check_output(
-        args).decode('utf-8').split("\n")[0]
-
+    rev = None
+    symbol = git_get_symbolic_ref()
+    if symbol is None:
+        rev = git_get_rev()
+        
     args = ['git', 'rev-list', 'HEAD']
     commits = subprocess.check_output(args).decode('utf-8').split("\n")
     commits = commits[0:len(commits)-1]
 
     stats = []
+    date_by_hash = dict()
     for i in commits:
-        com = cloc_on_commit(i)
+        commitDate = git_get_commit_date()
+        com = cloc_on_commit(i, commitDate)
         com.update({
             'hash': i
         })
+
+        date_by_hash[i] = commitDate
         stats.append(com)
 
-    git_checkout(initialCommit)
+    if symbol is not None:
+        git_checkout(symbol)
+    else:
+        git_checkout(rev)
 
     langs = set()
     for i in stats:
@@ -76,7 +109,7 @@ def main():
             langs.add(k)
 
     dataset = {}
-    zero = {
+    last = {
         'files_count': 0,
         'code': 0,
         'blank': 0,
@@ -87,17 +120,19 @@ def main():
             locs = [
                 [
                     i['hash'],
-                    i['languages'].get(l, zero)['files_count'],
-                    i['languages'].get(l, zero)['code'],
-                    i['languages'].get(l, zero)['blank'],
-                    i['languages'].get(l, zero)['comment']
+                    date_by_hash[i['hash']],
+                    i['languages'].get(l, last)['files_count'],
+                    i['languages'].get(l, last)['code'],
+                    i['languages'].get(l, last)['blank'],
+                    i['languages'].get(l, last)['comment']
                 ] for i in stats
             ]
             dataset[l] = locs
         except:
             continue
 
-    pprint.pprint(dataset)
+    for i in dataset['Swift']:
+        print("%s %i %i %i %i"%(i[1], i[2], i[3], i[4], i[5]))
 
 
 if __name__ == "__main__":
