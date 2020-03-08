@@ -131,8 +131,14 @@ def main():
         except:
             continue
 
-    for i in dataset['Python']:
-        print("%s %i %i %i %i"%(i[1], i[2], i[3], i[4], i[5]))
+    for i in dataset['Swift']:
+        print("%s %i %i %i %i"%(
+            i[1].strftime("%Y-%m-%d %H:%M:%S"), 
+            i[2], 
+            i[3], 
+            i[4], 
+            i[5])
+        )
 
 
 if __name__ == "__main__":
