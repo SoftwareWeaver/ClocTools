@@ -131,7 +131,7 @@ def main():
         except:
             continue
 
-    for i in dataset['Swift']:
+    for i in dataset['Python']:
         print("%s %i %i %i %i"%(i[1], i[2], i[3], i[4], i[5]))
 
 
