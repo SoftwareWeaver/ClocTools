@@ -76,6 +76,20 @@ def cloc_on_commit(hash, commitDate):
     result = parse_cloc_xml_result(root)
     return result
 
+def get_oldest_commits_of_days(dataset):
+
+
+    daydict = dict()
+    for i in reversed(dataset): # reverse order to get youngest item first
+        date = i[1].strftime("%Y-%m-%d")
+        daydict[date] = i
+
+    re = []
+    for _ , i in daydict.items():
+        re.append(i)
+
+    re.sort(key=lambda x:x[1],reverse=True)
+    return re
 def main():
     rev = None
     symbol = git_get_symbolic_ref()
@@ -130,7 +144,7 @@ def main():
             dataset[l] = locs
         except:
             continue
-
+    
     for i in dataset['Swift']:
         print("%s %i %i %i %i"%(
             i[1].strftime("%Y-%m-%d %H:%M:%S"), 
@@ -139,6 +153,18 @@ def main():
             i[4], 
             i[5])
         )
+
+    print("---")
+    reduced = get_oldest_commits_of_days(dataset['Swift'])
+    for i in reduced:
+        print("%s %i %i %i %i"%(
+            i[1].strftime("%Y-%m-%d %H:%M:%S"), 
+            i[2], 
+            i[3], 
+            i[4], 
+            i[5])
+        )
+    
 
 
 if __name__ == "__main__":
