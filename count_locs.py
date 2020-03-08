@@ -3,7 +3,7 @@ import pprint
 import json
 import datetime
 import xml.etree.ElementTree as ET
-
+from tabulate import tabulate
 
 def git_get_symbolic_ref():
     try:
@@ -69,7 +69,7 @@ def cloc_on_commit(hash, commitDate):
     
     args = ['cloc', '-xml', '-q', '.']
     
-    print("%s %s"%( str(hash), str(commitDate) ))
+    print("Processing: %s %s"%( str(hash), str(commitDate) ))
 
     data = subprocess.check_output(args).decode('utf-8').strip()
     root = ET.fromstring(data)
@@ -90,6 +90,12 @@ def get_oldest_commits_of_days(dataset):
 
     re.sort(key=lambda x:x[1],reverse=True)
     return re
+
+def tableData(lang):
+    return [
+        x[1:]
+        for x in lang
+    ]
 def main():
     rev = None
     symbol = git_get_symbolic_ref()
@@ -144,28 +150,20 @@ def main():
             dataset[l] = locs
         except:
             continue
-    
-    for i in dataset['Swift']:
-        print("%s %i %i %i %i"%(
-            i[1].strftime("%Y-%m-%d %H:%M:%S"), 
-            i[2], 
-            i[3], 
-            i[4], 
-            i[5])
-        )
 
-    print("---")
+    print()
+    print(tabulate(tableData(dataset['Swift']), 
+        headers=["date", "files_count","code","blank","comment"],
+        tablefmt="github"
+    ))
+
+    print()
     reduced = get_oldest_commits_of_days(dataset['Swift'])
-    for i in reduced:
-        print("%s %i %i %i %i"%(
-            i[1].strftime("%Y-%m-%d %H:%M:%S"), 
-            i[2], 
-            i[3], 
-            i[4], 
-            i[5])
-        )
-    
 
+    print(tabulate(tableData(reduced), 
+        headers=["date", "files_count","code","blank","comment"],
+        tablefmt="github"
+    ))
 
 if __name__ == "__main__":
     main()
