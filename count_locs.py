@@ -93,9 +93,10 @@ def get_oldest_commits_of_days(dataset):
 
 def tableData(lang):
     return [
-        x[1:]
+        [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:]
         for x in lang
     ]
+
 def main():
     rev = None
     symbol = git_get_symbolic_ref()
@@ -153,7 +154,7 @@ def main():
 
     print()
     print(tabulate(tableData(dataset['Swift']), 
-        headers=["date", "files_count","code","blank","comment"],
+        headers=["timestamp", "files_count", "code", "blank", "comment"],
         tablefmt="github"
     ))
 
@@ -161,7 +162,7 @@ def main():
     reduced = get_oldest_commits_of_days(dataset['Swift'])
 
     print(tabulate(tableData(reduced), 
-        headers=["date", "files_count","code","blank","comment"],
+        headers=["timestamp", "files_count","code","blank","comment"],
         tablefmt="github"
     ))
 
