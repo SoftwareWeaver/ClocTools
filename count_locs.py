@@ -76,12 +76,10 @@ def cloc_on_commit(hash, commitDate):
     result = parse_cloc_xml_result(root)
     return result
 
-def get_oldest_commits_of_days(dataset):
-
-
+def get_newest_commits(dataset, timestr):
     daydict = dict()
     for i in reversed(dataset): # reverse order to get youngest item first
-        date = i[1].strftime("%Y-%m-%d")
+        date = i[1].strftime(timestr)
         daydict[date] = i
 
     re = []
@@ -159,8 +157,7 @@ def main():
     ))
 
     print()
-    reduced = get_oldest_commits_of_days(dataset['Swift'])
-
+    reduced = get_newest_commits(dataset['Swift'], "%Y-%m-%d")
     print(tabulate(tableData(reduced), 
         headers=["timestamp", "files_count","code","blank","comment"],
         tablefmt="github"
