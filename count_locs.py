@@ -37,8 +37,7 @@ def git_no_changes():
     # Check if files were modified
     gdiff_files=['git','diff-files','--quiet','--ignore-submodules']
     modified = subprocess.run(gdiff_files).returncode == 1
-
-
+    
     # Check if files were added
     gdiff_index=['git','diff-index','--quiet','--cached', 'HEAD', '--ignore-submodules']
     added = subprocess.run(gdiff_index).returncode == 1
