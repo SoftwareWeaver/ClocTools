@@ -32,6 +32,24 @@ def git_get_commit_date():
     datestring = subprocess.check_output(args).decode('utf-8').strip("\n")
     return datetime.datetime.strptime(datestring, "%Y-%m-%dT%H:%M:%S%z")
 
+def git_no_changes():
+
+    # Check if files were modified
+    gdiff_files=['git','diff-files','--quiet','--ignore-submodules']
+    modified = subprocess.run(gdiff_files).returncode == 1
+
+
+    # Check if files were added
+    gdiff_index=['git','diff-index','--quiet','--cached', 'HEAD', '--ignore-submodules']
+    added = subprocess.run(gdiff_index).returncode == 1
+
+    # Check if there are untracked files
+    gls_files=['git','ls-files','-o','-z', '--exclude-standard']
+    out_ls_file = subprocess.check_output(gls_files).decode('utf-8')
+    untracked = len(out_ls_file) != 0
+
+    return (not modified) and (not added) and (not untracked)
+
 def parse_cloc_xml_result(root):
 
     header = {}
@@ -96,8 +114,14 @@ def tableData(lang):
     ]
 
 def main():
-    rev = None
+
+    if (not git_no_changes()):
+        print("Local changes. Aborting!")
+        exit(-1)
+    
     symbol = git_get_symbolic_ref()
+    
+    rev = None
     if symbol is None:
         rev = git_get_rev()
         
