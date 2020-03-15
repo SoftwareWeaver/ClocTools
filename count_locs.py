@@ -210,22 +210,20 @@ def createTabulateTable(lang):
 
 def command_eval():
     parser = argparse.ArgumentParser(
-        prog="count_locs eval language",
-        description="counts lines of code present in each git commit and stores them in a file."
+        prog="count_locs eval method language",
+        description="evaluate the dataset written by the build command."
     )
 
     parser.add_argument(
         'method', 
         choices=['commits', 'daily', 'weekly', 'monthly'],
-        help='Only consider the latest commit on a day'
+        help='Choose the evaluation method'
     )
 
     parser.add_argument(
         'language',
         help='Programming language'
     )
-
-
 
     _args = parser.parse_args(sys.argv[2:])
     with open('.locs.json', 'r') as infile:
@@ -284,6 +282,7 @@ def main():
             "\n"
             "The following commands are supported:\n"
             "   build   counts lines of code present in each git commit and stores them in a file."
+            "   eval    evaluate the dataset written by the build command."
     ))
 
     parser.add_argument(
@@ -308,7 +307,7 @@ def main():
 
     # use dispatch pattern to invoke method with same name
     getattr(thismodule,  "command_"+args.command)()
-    
+
 
 if __name__ == "__main__":
     main()
