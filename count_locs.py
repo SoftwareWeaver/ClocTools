@@ -189,7 +189,7 @@ def get_newest_commits(dataset, timestr):
     re.sort(key=lambda x:x[1],reverse=True)
     return re
 
-def tableData(lang):
+def createTabulateTable(lang):
     re = [
         [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:] + [0,0,0, 0]
         for x in lang
@@ -223,6 +223,12 @@ def command_eval():
         help='Programming language'
     )
 
+    parser.add_argument(
+        '--daily', 
+        help='Only consider the latest commit on a day', 
+        action='store_true'
+    )
+
     _args = parser.parse_args(sys.argv[2:])
     with open('.locs.json', 'r') as infile:
         dataset = json.load(infile)
@@ -236,20 +242,22 @@ def command_eval():
         print("Language not in dataset.")
         exit(-1)
 
-    print()
-    print("LOCS per commit:")
-    print(tabulate(tableData(dataset[_args.language]), 
-        headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
-        tablefmt="github"
-    ))
-
-    print()
-    print("LOCS per day:")
-    reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
-    print(tabulate(tableData(reduced), 
-        headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
-        tablefmt="github"
-    ))
+    if (not _args.daily):
+        print()
+        print(_args)
+        print("LOCS per commit:")
+        print(tabulate(createTabulateTable(dataset[_args.language]), 
+            headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
+            tablefmt="github"
+        ))
+    else:
+        print()
+        print("LOCS per day:")
+        reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
+        print(tabulate(createTabulateTable(reduced), 
+            headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
+            tablefmt="github"
+        ))
 
 # ---------------------------------------------
 # main
