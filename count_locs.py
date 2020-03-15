@@ -98,8 +98,6 @@ def cloc_on_commit(hash, commitDate):
     result = parse_cloc_xml_result(root)
     return result
 
-
-
 def command_build():
     parser = argparse.ArgumentParser(
             prog="count_locs build",
@@ -192,10 +190,27 @@ def get_newest_commits(dataset, timestr):
     return re
 
 def tableData(lang):
-    return [
-        [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:]
+    re = [
+        [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:] + [0,0,0, 0]
         for x in lang
     ]
+
+    for idx in range(0, len(re)-1):
+        i0 = re[idx]
+        i1 = re[idx+1]
+        i0[5] = i0[1] - i1[1] # dfcount
+        i0[6] = i0[2] - i1[2] # dcode
+        i0[7] = i0[3] - i1[3] # dblank
+        i0[8] = i0[4] - i1[4] # dcomment
+
+    # special case ... last entry
+    item = re[len(re)-1]
+    item[5] = item[1] # dfcount
+    item[6] = item[2] # dcode
+    item[7] = item[3] # dblank
+    item[8] = item[4] # dcomment
+
+    return re
 
 def command_eval():
     parser = argparse.ArgumentParser(
@@ -224,7 +239,7 @@ def command_eval():
     print()
     print("LOCS per commit:")
     print(tabulate(tableData(dataset[_args.language]), 
-        headers=["timestamp", "files_count", "code", "blank", "comment"],
+        headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
         tablefmt="github"
     ))
 
@@ -232,7 +247,7 @@ def command_eval():
     print("LOCS per day:")
     reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
     print(tabulate(tableData(reduced), 
-        headers=["timestamp", "files_count","code","blank","comment"],
+        headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
         tablefmt="github"
     ))
 
