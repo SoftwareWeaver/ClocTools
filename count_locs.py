@@ -91,7 +91,7 @@ def parse_cloc_xml_result(root):
 def cloc_on_commit(hash, commitDate):
     git_checkout(hash)
     
-    args = ['cloc', '-xml', '-q', '.']
+    args = ['cloc', '-xml', '-q', '.','--exclude-dir=.locs.json']
     
     print("Processing: %s %s"%( str(hash), str(commitDate) ))
 
@@ -240,7 +240,6 @@ def command_eval():
 # ---------------------------------------------
 # main
 # ---------------------------------------------
-
 def main():
     parser = argparse.ArgumentParser(
     prog="count_locs",
