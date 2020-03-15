@@ -209,38 +209,46 @@ def createTabulateTable(lang):
     return re
 
 def command_eval():
+    try:
+        with open('.locs.json', 'r') as infile:
+            dataset = json.load(infile)
+    except IOError:
+        print('File .locs.json not accessible.')
+        exit(-1)
+
+    # Language list
+    langs = []
+    for i,_ in dataset.items():
+        langs.append(i)
+
     parser = argparse.ArgumentParser(
-        prog="count_locs eval method language",
+        prog="count_locs eval",
         description="evaluate the dataset written by the build command."
     )
 
     parser.add_argument(
-        'method', 
+        '-m','--method',
         choices=['commits', 'daily', 'weekly', 'monthly'],
+        required=True,
         help='Choose the evaluation method'
     )
 
     parser.add_argument(
-        'language',
-        help='Programming language'
+        '-l','--language',
+        choices = langs,
+        required=True,
+        help='Choose the programming language'
     )
 
     _args = parser.parse_args(sys.argv[2:])
-    with open('.locs.json', 'r') as infile:
-        dataset = json.load(infile)
 
-    # Convert datetime
+    # Convert datetime since json stores this as strings
     for _, data in dataset.items():
         for entry in data:
             entry[1] = datetime.datetime.strptime(entry[1], "%Y-%m-%d %H:%M:%S%z")
-    
-    if not _args.language in dataset:
-        print("Language not in dataset.")
-        exit(-1)
 
     if (_args.method == "commits"):
         print()
-        print(_args)
         print("LOCS per commit:")
         print(tabulate(createTabulateTable(dataset[_args.language]), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
