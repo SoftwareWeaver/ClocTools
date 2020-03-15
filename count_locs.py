@@ -91,7 +91,7 @@ def parse_cloc_xml_result(root):
 def cloc_on_commit(hash, commitDate):
     git_checkout(hash)
     
-    args = ['cloc', '-xml', '-q', '.','--exclude-dir='+IGNORES.join(",")]
+    args = ['cloc', '-xml', '-q', '.','--exclude-dir='+",".join(IGNORES)]
     
     print("Processing: %s %s"%( str(hash), str(commitDate) ))
 
