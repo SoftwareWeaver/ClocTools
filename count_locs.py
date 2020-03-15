@@ -96,9 +96,9 @@ def execute_cloc():
 
 def command_build():
     parser = argparse.ArgumentParser(
-            prog="count_locs build",
-            description="counts lines of code present in each git commit and stores them in a file."
-        )
+        prog="count_locs build",
+        description="counts lines of code present in each git commit and stores them in a file."
+    )
 
     _args = parser.parse_args(sys.argv[2:])
 
@@ -149,8 +149,7 @@ def command_build():
     }
     for l in langs:
         try:
-            locs = [
-                [
+            locs = [[
                     i['hash'],
                     date_by_hash[i['hash']],
                     i['languages'].get(l, last)['files_count'],
