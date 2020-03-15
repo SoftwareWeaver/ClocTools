@@ -162,12 +162,12 @@ def command_build():
         except:
             continue
 
-    def myconverter(o):
+    def date_converter(o):
         if isinstance(o, datetime.datetime):
             return o.__str__()
 
     with open('.locs.json', 'w') as outfile:
-        json.dump(dataset, outfile, indent=4, default = myconverter, sort_keys=True)
+        json.dump(dataset, outfile, indent=4, default = date_converter, sort_keys=True)
 
 # ---------------------------------------------
 # Eval
@@ -215,15 +215,17 @@ def command_eval():
     )
 
     parser.add_argument(
+        'method', 
+        choices=['commits', 'daily', 'weekly', 'monthly'],
+        help='Only consider the latest commit on a day'
+    )
+
+    parser.add_argument(
         'language',
         help='Programming language'
     )
 
-    parser.add_argument(
-        '--daily', 
-        help='Only consider the latest commit on a day', 
-        action='store_true'
-    )
+
 
     _args = parser.parse_args(sys.argv[2:])
     with open('.locs.json', 'r') as infile:
@@ -238,7 +240,7 @@ def command_eval():
         print("Language not in dataset.")
         exit(-1)
 
-    if (not _args.daily):
+    if (_args.method == "commits"):
         print()
         print(_args)
         print("LOCS per commit:")
@@ -246,10 +248,26 @@ def command_eval():
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
         ))
-    else:
+    elif (_args.method == "daily"):
         print()
         print("LOCS per day:")
         reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
+        print(tabulate(createTabulateTable(reduced), 
+            headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
+            tablefmt="github"
+        ))
+    elif (_args.method == "weekly"):
+        print()
+        print("LOCS per week:")
+        reduced = get_newest_commits(dataset[_args.language], "%Y-%W")
+        print(tabulate(createTabulateTable(reduced), 
+            headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
+            tablefmt="github"
+        ))
+    elif (_args.method == "monthly"):
+        print()
+        print("LOCS per month:")
+        reduced = get_newest_commits(dataset[_args.language], "%Y-%m")
         print(tabulate(createTabulateTable(reduced), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
