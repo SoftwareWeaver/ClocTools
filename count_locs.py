@@ -57,7 +57,6 @@ def git_no_changes():
     return (not modified) and (not added) and (not untracked)
 
 def parse_cloc_xml_result(root):
-
     header = {}
 
     for item in root.find('header'):
@@ -88,11 +87,8 @@ def parse_cloc_xml_result(root):
     return data
 
 
-def cloc_on_commit(hash, commitDate):    
+def execute_cloc():    
     args = ['cloc', '-xml', '-q', '.','--exclude-dir='+",".join(IGNORES)]
-    
-    print("Processing: %s %s"%( str(hash), str(commitDate) ))
-
     data = subprocess.check_output(args).decode('utf-8').strip()
     root = ET.fromstring(data)
     result = parse_cloc_xml_result(root)
@@ -123,9 +119,10 @@ def command_build():
     stats = []
     date_by_hash = dict()
     for _hash in commits:
-        git_checkout(_hash)
         commitDate = git_get_commit_date()
-        com = cloc_on_commit(_hash, commitDate)
+        print("Processing: %s %s"%( str(_hash), str(commitDate) ))
+        git_checkout(_hash)
+        com = execute_cloc()
         com.update({
             'hash': _hash
         })
