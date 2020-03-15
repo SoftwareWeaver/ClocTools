@@ -173,7 +173,7 @@ def command_build():
             return o.__str__()
 
     with open('.locs.json', 'w') as outfile:
-        json.dump(dataset, outfile, indent=4, default = myconverter)
+        json.dump(dataset, outfile, indent=4, default = myconverter, sort_keys=True)
 
 # ---------------------------------------------
 # Eval
