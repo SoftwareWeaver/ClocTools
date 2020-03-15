@@ -9,6 +9,9 @@ from tabulate import tabulate
 
 __version__ = "0.0.11"
 
+# ---------------------------------------------
+# Build
+# ---------------------------------------------
 
 def git_get_symbolic_ref():
     try:
@@ -97,24 +100,7 @@ def cloc_on_commit(hash, commitDate):
     result = parse_cloc_xml_result(root)
     return result
 
-def get_newest_commits(dataset, timestr):
-    daydict = dict()
-    for i in reversed(dataset): # reverse order to get youngest item first
-        date = i[1].strftime(timestr)
-        daydict[date] = i
 
-    re = []
-    for _ , i in daydict.items():
-        re.append(i)
-
-    re.sort(key=lambda x:x[1],reverse=True)
-    return re
-
-def tableData(lang):
-    return [
-        [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:]
-        for x in lang
-    ]
 
 def command_build():
     parser = argparse.ArgumentParser(
@@ -190,8 +176,29 @@ def command_build():
     with open('.locs.json', 'w') as outfile:
         json.dump(dataset, outfile, indent=4, default = myconverter)
 
+# ---------------------------------------------
+# Eval
+# ---------------------------------------------
+def get_newest_commits(dataset, timestr):
+    daydict = dict()
+    for i in reversed(dataset): # reverse order to get youngest item first
+        date = i[1].strftime(timestr)
+        daydict[date] = i
+
+    re = []
+    for _ , i in daydict.items():
+        re.append(i)
+
+    re.sort(key=lambda x:x[1],reverse=True)
+    return re
+
+def tableData(lang):
+    return [
+        [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:]
+        for x in lang
+    ]
+
 def command_eval():
-    
     parser = argparse.ArgumentParser(
             prog="count_locs eval",
             description="counts lines of code present in each git commit and stores them in a file."
@@ -217,6 +224,10 @@ def command_eval():
         headers=["timestamp", "files_count","code","blank","comment"],
         tablefmt="github"
     ))
+
+# ---------------------------------------------
+# main
+# ---------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(
