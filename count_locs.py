@@ -1,9 +1,14 @@
 import subprocess
 import pprint
 import json
+import sys
 import datetime
+import argparse
 import xml.etree.ElementTree as ET
 from tabulate import tabulate
+
+__version__ = "0.0.11"
+
 
 def git_get_symbolic_ref():
     try:
@@ -111,7 +116,13 @@ def tableData(lang):
         for x in lang
     ]
 
-def main():
+def command_build():
+    parser = argparse.ArgumentParser(
+            prog="count_locs build",
+            description="counts lines of code present in each git commit and stores them in a file."
+        )
+
+    _args = parser.parse_args(sys.argv[2:])
 
     if (not git_no_changes()):
         print("Local changes. Aborting!")
@@ -172,7 +183,29 @@ def main():
         except:
             continue
 
-    print()
+    def myconverter(o):
+        if isinstance(o, datetime.datetime):
+            return o.__str__()
+
+    with open('.locs.json', 'w') as outfile:
+        json.dump(dataset, outfile, indent=4, default = myconverter)
+
+def command_eval():
+    
+    parser = argparse.ArgumentParser(
+            prog="count_locs eval",
+            description="counts lines of code present in each git commit and stores them in a file."
+        )
+
+    _args = parser.parse_args(sys.argv[2:])
+    with open('.locs.json', 'r') as infile:
+        dataset = json.load(infile)
+
+    # Convert datetime
+    for _, data in dataset.items():
+        for entry in data:
+            entry[1] = datetime.datetime.strptime(entry[1], "%Y-%m-%d %H:%M:%S%z")
+        
     print(tabulate(tableData(dataset['Swift']), 
         headers=["timestamp", "files_count", "code", "blank", "comment"],
         tablefmt="github"
@@ -184,6 +217,40 @@ def main():
         headers=["timestamp", "files_count","code","blank","comment"],
         tablefmt="github"
     ))
+
+def main():
+    parser = argparse.ArgumentParser(
+    prog="count_locs",
+    description='',
+    usage=("count_locs <command> [<args]\n"
+            "\n"
+            "The following commands are supported:\n"
+            "   build   counts lines of code present in each git commit and stores them in a file."
+    ))
+
+    parser.add_argument(
+        'command',
+        help='Subcommand to run'
+    )
+
+    parser.add_argument(
+        '--version',
+        action='version',
+        version='%(prog)s {version}'.format(version=__version__)
+    )
+    args = parser.parse_args(sys.argv[1:2])
+
+    # get reference to this module
+    thismodule = sys.modules[__name__]
+
+    if not hasattr(thismodule, "command_"+args.command):
+        print('Unrecognized command')
+        parser.print_help()
+        exit(1)
+
+    # use dispatch pattern to invoke method with same name
+    getattr(thismodule,  "command_"+args.command)()
+    
 
 if __name__ == "__main__":
     main()
