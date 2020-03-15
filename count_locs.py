@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 from tabulate import tabulate
 
 __version__ = "0.0.11"
-
+IGNORES = [".locs.json",".git",".gitignore",".vscode"]
 # ---------------------------------------------
 # Build
 # ---------------------------------------------
@@ -91,7 +91,7 @@ def parse_cloc_xml_result(root):
 def cloc_on_commit(hash, commitDate):
     git_checkout(hash)
     
-    args = ['cloc', '-xml', '-q', '.','--exclude-dir=.locs.json,.git,.gitignore,.vscode']
+    args = ['cloc', '-xml', '-q', '.','--exclude-dir='+IGNORES.join(",")]
     
     print("Processing: %s %s"%( str(hash), str(commitDate) ))
 
