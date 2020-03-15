@@ -200,9 +200,14 @@ def tableData(lang):
 
 def command_eval():
     parser = argparse.ArgumentParser(
-            prog="count_locs eval",
-            description="counts lines of code present in each git commit and stores them in a file."
-        )
+        prog="count_locs eval language",
+        description="counts lines of code present in each git commit and stores them in a file."
+    )
+
+    parser.add_argument(
+        'language',
+        help='Programming language'
+    )
 
     _args = parser.parse_args(sys.argv[2:])
     with open('.locs.json', 'r') as infile:
@@ -212,14 +217,21 @@ def command_eval():
     for _, data in dataset.items():
         for entry in data:
             entry[1] = datetime.datetime.strptime(entry[1], "%Y-%m-%d %H:%M:%S%z")
-        
-    print(tabulate(tableData(dataset['Swift']), 
+    
+    if not _args.language in dataset:
+        print("Language not in dataset.")
+        exit(-1)
+
+    print()
+    print("LOCS per commit:")
+    print(tabulate(tableData(dataset[_args.language]), 
         headers=["timestamp", "files_count", "code", "blank", "comment"],
         tablefmt="github"
     ))
 
     print()
-    reduced = get_newest_commits(dataset['Swift'], "%Y-%m-%d")
+    print("LOCS per day:")
+    reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
     print(tabulate(tableData(reduced), 
         headers=["timestamp", "files_count","code","blank","comment"],
         tablefmt="github"
