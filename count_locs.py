@@ -88,9 +88,7 @@ def parse_cloc_xml_result(root):
     return data
 
 
-def cloc_on_commit(hash, commitDate):
-    git_checkout(hash)
-    
+def cloc_on_commit(hash, commitDate):    
     args = ['cloc', '-xml', '-q', '.','--exclude-dir='+",".join(IGNORES)]
     
     print("Processing: %s %s"%( str(hash), str(commitDate) ))
@@ -126,14 +124,15 @@ def command_build():
 
     stats = []
     date_by_hash = dict()
-    for i in commits:
+    for _hash in commits:
+        git_checkout(_hash)
         commitDate = git_get_commit_date()
-        com = cloc_on_commit(i, commitDate)
+        com = cloc_on_commit(_hash, commitDate)
         com.update({
-            'hash': i
+            'hash': _hash
         })
 
-        date_by_hash[i] = commitDate
+        date_by_hash[_hash] = commitDate
         stats.append(com)
 
     if symbol is not None:
