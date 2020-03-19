@@ -227,14 +227,14 @@ def command_eval():
     )
 
     parser.add_argument(
-        '-m','--method',
+        '-m',
         choices=['commits', 'daily', 'weekly', 'monthly'],
         required=True,
         help='Choose the evaluation method'
     )
 
     parser.add_argument(
-        '-l','--language',
+        '-l',
         choices = langs,
         required=True,
         help='Choose the programming language'
@@ -289,7 +289,7 @@ def main():
     usage=("count_locs <command> [<args]\n"
             "\n"
             "The following commands are supported:\n"
-            "   build   counts lines of code present in each git commit and stores them in a file."
+            "   build   counts lines of code present in each git commit and stores them in a file.\n"
             "   eval    evaluate the dataset written by the build command."
     ))
 
