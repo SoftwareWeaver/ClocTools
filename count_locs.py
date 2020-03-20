@@ -1,5 +1,4 @@
 import subprocess
-import pprint
 import json
 import sys
 import datetime
@@ -104,7 +103,7 @@ def command_build():
 
     if (not git_no_changes()):
         print("Local changes. Aborting!")
-        exit(-1)
+        sys.exit(-1)
     
     symbol = git_get_symbolic_ref()
     
@@ -162,9 +161,11 @@ def command_build():
         except:
             continue
 
-    def date_converter(o):
-        if isinstance(o, datetime.datetime):
-            return o.__str__()
+    def date_converter(obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.__str__()
+        
+        return obj
 
     with open('.locs.json', 'w') as outfile:
         json.dump(dataset, outfile, indent=4, default = date_converter, sort_keys=True)
@@ -178,35 +179,35 @@ def get_newest_commits(dataset, timestr):
         date = i[1].strftime(timestr)
         daydict[date] = i
 
-    re = []
+    newest_commits = []
     for _ , i in daydict.items():
-        re.append(i)
+        newest_commits.append(i)
 
-    re.sort(key=lambda x:x[1],reverse=True)
-    return re
+    newest_commits.sort(key=lambda x:x[1],reverse=True)
+    return newest_commits
 
-def createTabulateTable(lang):
-    re = [
+def create_tabulate_table(lang):
+    tab_tab = [
         [x[1].strftime("%Y-%m-%d %H:%M")] + x[2:] + [0,0,0, 0]
         for x in lang
     ]
 
-    for idx in range(0, len(re)-1):
-        i0 = re[idx]
-        i1 = re[idx+1]
-        i0[5] = i0[1] - i1[1] # dfcount
-        i0[6] = i0[2] - i1[2] # dcode
-        i0[7] = i0[3] - i1[3] # dblank
-        i0[8] = i0[4] - i1[4] # dcomment
+    for idx in range(0, len(tab_tab)-1):
+        i_0 = tab_tab[idx]
+        i_1 = tab_tab[idx+1]
+        i_0[5] = i_0[1] - i_1[1] # dfcount
+        i_0[6] = i_0[2] - i_1[2] # dcode
+        i_0[7] = i_0[3] - i_1[3] # dblank
+        i_0[8] = i_0[4] - i_1[4] # dcomment
 
     # special case ... last entry
-    item = re[len(re)-1]
+    item = tab_tab[len(tab_tab)-1]
     item[5] = item[1] # dfcount
     item[6] = item[2] # dcode
     item[7] = item[3] # dblank
     item[8] = item[4] # dcomment
 
-    return re
+    return tab_tab
 
 def command_eval():
     try:
@@ -214,7 +215,7 @@ def command_eval():
             dataset = json.load(infile)
     except IOError:
         print('File .locs.json not accessible.')
-        exit(-1)
+        sys.exit(-1)
 
     # Language list
     langs = []
@@ -227,14 +228,14 @@ def command_eval():
     )
 
     parser.add_argument(
-        '-m',
+        '--method',
         choices=['commits', 'daily', 'weekly', 'monthly'],
         required=True,
         help='Choose the evaluation method'
     )
 
     parser.add_argument(
-        '-l',
+        '-language',
         choices = langs,
         required=True,
         help='Choose the programming language'
@@ -250,7 +251,7 @@ def command_eval():
     if (_args.method == "commits"):
         print()
         print("LOCS per commit:")
-        print(tabulate(createTabulateTable(dataset[_args.language]), 
+        print(tabulate(create_tabulate_table(dataset[_args.language]), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
         ))
@@ -258,7 +259,7 @@ def command_eval():
         print()
         print("LOCS per day:")
         reduced = get_newest_commits(dataset[_args.language], "%Y-%m-%d")
-        print(tabulate(createTabulateTable(reduced), 
+        print(tabulate(create_tabulate_table(reduced), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
         ))
@@ -266,7 +267,7 @@ def command_eval():
         print()
         print("LOCS per week:")
         reduced = get_newest_commits(dataset[_args.language], "%Y-%W")
-        print(tabulate(createTabulateTable(reduced), 
+        print(tabulate(create_tabulate_table(reduced), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
         ))
@@ -274,7 +275,7 @@ def command_eval():
         print()
         print("LOCS per month:")
         reduced = get_newest_commits(dataset[_args.language], "%Y-%m")
-        print(tabulate(createTabulateTable(reduced), 
+        print(tabulate(create_tabulate_table(reduced), 
             headers=["timestamp", "fcount", "code", "blank", "comment", "dfcount","dcode", "dblank", "dcomment"],
             tablefmt="github"
         ))
@@ -311,7 +312,7 @@ def main():
     if not hasattr(thismodule, "command_"+args.command):
         print('Unrecognized command')
         parser.print_help()
-        exit(1)
+        sys.exit(-1)
 
     # use dispatch pattern to invoke method with same name
     getattr(thismodule,  "command_"+args.command)()
