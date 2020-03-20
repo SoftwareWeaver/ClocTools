@@ -140,26 +140,23 @@ def command_build():
             langs.add(k)
 
     dataset = {}
-    last = {
+    default = {
         'files_count': 0,
         'code': 0,
         'blank': 0,
         'comment': 0
     }
     for l in langs:
-        try:
             locs = [[
                     i['hash'],
                     date_by_hash[i['hash']],
-                    i['languages'].get(l, last)['files_count'],
-                    i['languages'].get(l, last)['code'],
-                    i['languages'].get(l, last)['blank'],
-                    i['languages'].get(l, last)['comment']
+                    i['languages'].get(l, default)['files_count'],
+                    i['languages'].get(l, default)['code'],
+                    i['languages'].get(l, default)['blank'],
+                    i['languages'].get(l, default)['comment']
                 ] for i in stats
             ]
             dataset[l] = locs
-        except:
-            continue
 
     def date_converter(obj):
         if isinstance(obj, datetime.datetime):
