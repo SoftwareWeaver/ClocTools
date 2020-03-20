@@ -1,5 +1,5 @@
 """
-The python script checks out every single commit of a git repo
+This python script checks out every single commit of a git repo
 excecutes cloc on every file and saves the results over the commit date.
 """
 
@@ -19,7 +19,7 @@ IGNORES = [".locs.json", ".git", ".gitignore", ".vscode"]
 
 
 def git_get_symbolic_ref():
-    """ Gets the has of the symbolic reference
+    """ Returns the hash of the current active symbolic reference in a git repo
     """
     try:
         args = ['git', 'symbolic-ref', '--short', 'HEAD']
@@ -32,7 +32,7 @@ def git_get_symbolic_ref():
 
 
 def git_get_rev():
-    """ Gets the hash of HEAD
+    """ Returns the hash of HEAD of a git repo
     """
     args = ['git', 'rev-parse', 'HEAD']
 
@@ -42,7 +42,7 @@ def git_get_rev():
 
 
 def git_get_rev_list():
-    """ Returns a list of hashes sorted by date of the git repository
+    """ Returns a list of hashes sorted by date of the git repository.
     """
     args = ['git', 'rev-list', 'HEAD']
     rev_list = subprocess.check_output(args).decode('utf-8').split("\n")
@@ -51,7 +51,7 @@ def git_get_rev_list():
 
 
 def git_checkout(_hash):
-    """ Do a git checkout
+    """ Checkout of hash
     """
     args = ['git', 'checkout', '-q', _hash]
     subprocess.check_output(args).decode('utf-8').split("\n")
@@ -94,8 +94,8 @@ def git_no_changes():
 
 
 def parse_cloc_xml_result(root):
-    """ Parses the XML Results format from cloc and
-        converts that into a Python dicitionary
+    """ Parses the XML results output from cloc and
+        converts that into a Python dicitionary.
     """
     header = {}
 
@@ -138,7 +138,7 @@ def execute_cloc_and_parse():
 
 
 def git_parse(rev_list):
-    """ Checkouts all revisions in rev_list and does the following
+    """ Checkouts all revisions in rev_list and does the following with them
         1) Gets the date of the commit and converts it to a datetime object.
         2) Execute cloc on each commit and parse its results.
     """
@@ -160,7 +160,7 @@ def git_parse(rev_list):
 
 
 def save_dataset(dataset):
-    """ Saves the dataset to json format
+    """ Saves the dataset to json format.
     """
     def date_converter(obj):
         if isinstance(obj, datetime.datetime):
